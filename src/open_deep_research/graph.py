@@ -14,7 +14,7 @@ from open_deep_research.configuration import Configuration
 from open_deep_research.utils import tavily_search_async, deduplicate_and_format_sources, format_sections, perplexity_search
 
 # Set writer model
-writer_model = init_chat_model(model=Configuration.writer_model, model_provider=Configuration.writer_provider.value, temperature=0) 
+# writer_model = init_chat_model(model=Configuration.writer_model, model_provider=Configuration.writer_provider.value, temperature=0) #OLD LINE
 
 # Nodes
 async def generate_report_plan(state: ReportState, config: RunnableConfig):
@@ -33,25 +33,35 @@ async def generate_report_plan(state: ReportState, config: RunnableConfig):
     if isinstance(report_structure, dict):
         report_structure = str(report_structure)
 
+    # Initialize writer model
+    writer_provider = configurable.writer_provider.value if hasattr(configurable.writer_provider, 'value') else configurable.writer_provider
+    writer_model = init_chat_model(
+        model=configurable.writer_model,
+        model_provider=writer_provider,
+        temperature=None  # Let init_chat_model decide if temperature should be used
+    )
+    
     # Generate search query
     structured_llm = writer_model.with_structured_output(Queries)
 
     # Format system instructions
-    system_instructions_query = report_planner_query_writer_instructions.format(topic=topic, report_organization=report_structure, number_of_queries=number_of_queries)
+    system_instructions_query = report_planner_query_writer_instructions.format(
+        topic=topic, 
+        report_organization=report_structure, 
+        number_of_queries=number_of_queries
+    )
 
     # Generate queries  
-    results = structured_llm.invoke([SystemMessage(content=system_instructions_query)]+[HumanMessage(content="Generate search queries that will help with planning the sections of the report.")])
+    results = structured_llm.invoke([
+        SystemMessage(content=system_instructions_query),
+        HumanMessage(content="Generate search queries that will help with planning the sections of the report.")
+    ])
 
     # Web search
     query_list = [query.search_query for query in results.queries]
 
-    # Handle both cases for search_api:
-    # 1. When selected in Studio UI -> returns a string (e.g. "tavily")
-    # 2. When using default -> returns an Enum (e.g. SearchAPI.TAVILY)
-    if isinstance(configurable.search_api, str):
-        search_api = configurable.search_api
-    else:
-        search_api = configurable.search_api.value
+    # Handle both cases for search_api
+    search_api = configurable.search_api.value if hasattr(configurable.search_api, 'value') else configurable.search_api
 
     # Search the web
     if search_api == "tavily":
@@ -64,20 +74,29 @@ async def generate_report_plan(state: ReportState, config: RunnableConfig):
         raise ValueError(f"Unsupported search API: {configurable.search_api}")
 
     # Format system instructions
-    system_instructions_sections = report_planner_instructions.format(topic=topic, report_organization=report_structure, context=source_str, feedback=feedback)
+    system_instructions_sections = report_planner_instructions.format(
+        topic=topic, 
+        report_organization=report_structure, 
+        context=source_str, 
+        feedback=feedback
+    )
 
     # Set the planner provider
-    if isinstance(configurable.planner_provider, str):
-        planner_provider = configurable.planner_provider
-    else:
-        planner_provider = configurable.planner_provider.value
+    planner_provider = configurable.planner_provider.value if hasattr(configurable.planner_provider, 'value') else configurable.planner_provider
 
-    # Set the planner model
-    planner_llm = init_chat_model(model=Configuration.planner_model, model_provider=planner_provider, temperature=0)
+    # Initialize planner model
+    planner_llm = init_chat_model(
+        model=configurable.planner_model,
+        model_provider=planner_provider,
+        temperature=None  # Let init_chat_model decide if temperature should be used
+    )
     
     # Generate sections 
     structured_llm = planner_llm.with_structured_output(Sections)
-    report_sections = structured_llm.invoke([SystemMessage(content=system_instructions_sections)]+[HumanMessage(content="Generate the sections of the report. Your response must include a 'sections' field containing a list of sections. Each section must have: name, description, plan, research, and content fields.")])
+    report_sections = structured_llm.invoke([
+        SystemMessage(content=system_instructions_sections),
+        HumanMessage(content="Generate the sections of the report. Your response must include a 'sections' field containing a list of sections. Each section must have: name, description, plan, research, and content fields.")
+    ])
 
     # Get sections
     sections = report_sections.sections
