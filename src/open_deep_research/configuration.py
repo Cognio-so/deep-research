@@ -91,7 +91,7 @@ class Configuration:
     planner_provider: PlannerProvider = PlannerProvider.OPENAI  # Defaults to OpenAI as provider
     planner_model: str = "o3-mini" # Defaults to OpenAI o3-mini as planner model
     writer_provider: WriterProvider = WriterProvider.OPENAI # Defaults to OPENAI as provider
-    writer_model: str = "gpt-4o" # Defaults to Anthropic as provider
+    writer_model: str = "gpt-4o" # Defaults to OpenAI as provider
     search_api: SearchAPI = SearchAPI.TAVILY # Default to TAVILY
 
     @classmethod
