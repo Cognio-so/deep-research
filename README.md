@@ -191,7 +191,3 @@ These configurations allow you to fine-tune the research process based on your n
 ### Local deployment
 
 Follow the [quickstart](#quickstart) to start LangGraph server locally.
-
-### Hosted deployment
- 
-You can easily deploy to [LangGraph Platform ](https://langchain-ai.github.io/langgraph/concepts/#deployment-options). 

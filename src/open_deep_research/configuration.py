@@ -6,17 +6,69 @@ from typing import Any, Optional
 from langchain_core.runnables import RunnableConfig
 from dataclasses import dataclass
 
-DEFAULT_REPORT_STRUCTURE = """Use this structure to create a report on the user-provided topic:
+DEFAULT_REPORT_STRUCTURE = """
+Use this structure to create a comprehensive report on the user-provided topic:
 
-1. Introduction (no research needed)
-   - Brief overview of the topic area
+1. Executive Summary
+   - Key findings and insights
+   - Scope and objectives
+   - Methodology overview
 
-2. Main Body Sections:
-   - Each section should focus on a sub-topic of the user-provided topic
-   
-3. Conclusion
-   - Aim for 1 structural element (either a list of table) that distills the main body sections 
-   - Provide a concise summary of the report"""
+2. Introduction
+   - Background and context
+   - Problem statement or research question
+   - Significance and relevance
+   - Research methodology details
+     * Data sources
+     * Search strategies
+     * Analysis methods
+
+3. Main Research Findings
+   - Historical Context and Evolution
+     * Timeline of key developments
+     * Major milestones and breakthroughs
+
+   - Current State Analysis
+     * Market/field overview
+     * Key players and stakeholders
+     * Statistical data and metrics
+     * Geographic considerations
+
+   - Technical/Detailed Analysis
+     * Core components/concepts
+     * Technological aspects
+     * Process workflows
+     * Regulatory framework
+
+   - Challenges and Opportunities
+     * Current limitations
+     * Emerging trends
+     * Future possibilities
+     * Risk factors
+
+4. Comparative Analysis
+   - Industry benchmarks
+   - Competitive landscape
+   - Best practices
+   - Case studies
+
+5. Impact Assessment
+   - Economic implications
+   - Social implications
+   - Environmental considerations
+   - Ethical considerations
+
+6. Future Outlook
+   - Predicted trends
+   - Growth opportunities
+   - Potential challenges
+   - Strategic recommendations
+
+7. Conclusion
+   - Summary of key findings
+   - Critical insights
+   - Research limitations
+   - Recommendations for further research""" 
 
 class SearchAPI(Enum):
     PERPLEXITY = "perplexity"
@@ -28,17 +80,18 @@ class PlannerProvider(Enum):
 
 class WriterProvider(Enum):
     ANTHROPIC = "anthropic"
+    OPENAI = "openai"
 
 @dataclass(kw_only=True)
 class Configuration:
     """The configurable fields for the chatbot."""
     report_structure: str = DEFAULT_REPORT_STRUCTURE # Defaults to the default report structure
     number_of_queries: int = 2 # Number of search queries to generate per iteration
-    max_search_depth: int = 2 # Maximum number of reflection + search iterations
+    max_search_depth: int = 3 # Maximum number of reflection + search iterations
     planner_provider: PlannerProvider = PlannerProvider.OPENAI  # Defaults to OpenAI as provider
     planner_model: str = "o3-mini" # Defaults to OpenAI o3-mini as planner model
-    writer_provider: WriterProvider = WriterProvider.ANTHROPIC # Defaults to Anthropic as provider
-    writer_model: str = "claude-3-5-sonnet-latest" # Defaults to Anthropic as provider
+    writer_provider: WriterProvider = WriterProvider.OPENAI # Defaults to OPENAI as provider
+    writer_model: str = "gpt-4o" # Defaults to Anthropic as provider
     search_api: SearchAPI = SearchAPI.TAVILY # Default to TAVILY
 
     @classmethod
