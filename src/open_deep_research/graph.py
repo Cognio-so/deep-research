@@ -116,12 +116,14 @@ def human_feedback(state: ReportState, config: RunnableConfig) -> Command[Litera
     )
 
     # Get feedback on the report plan from interrupt
-
     feedback = interrupt(f"Please provide feedback on the following report plan. \n\n{sections_str}\n\n Does the report plan meet your needs? Pass 'true' to approve the report plan or provide feedback to regenerate the report plan:")
 
+    # Handle feedback which may come as dict from LangGraph Studio
+    if isinstance(feedback, dict) and 'resume' in feedback:
+        feedback = feedback['resume']
+
     # If the user approves the report plan, kick off section writing
-    # if isinstance(feedback, bool) and feedback is True:
-    if isinstance(feedback, bool):
+    if isinstance(feedback, bool) or (isinstance(feedback, str) and feedback.lower() == 'true'):
         # Treat this as approve and kick off section writing
         return Command(goto=[
             Send("build_section_with_web_research", {"section": s, "search_iterations": 0}) 
@@ -133,7 +135,7 @@ def human_feedback(state: ReportState, config: RunnableConfig) -> Command[Litera
     elif isinstance(feedback, str):
         # treat this as feedback
         return Command(goto="generate_report_plan", 
-                       update={"feedback_on_report_plan": feedback})
+                      update={"feedback_on_report_plan": feedback})
     else:
         raise TypeError(f"Interrupt value of type {type(feedback)} is not supported.")
     
