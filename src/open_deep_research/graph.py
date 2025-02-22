@@ -149,6 +149,14 @@ def generate_queries(state: SectionState, config: RunnableConfig):
     configurable = Configuration.from_runnable_config(config)
     number_of_queries = configurable.number_of_queries
 
+    # Initialize writer model
+    writer_provider = configurable.writer_provider.value if hasattr(configurable.writer_provider, 'value') else configurable.writer_provider
+    writer_model = init_chat_model(
+        model=configurable.writer_model,
+        model_provider=writer_provider,
+        temperature=None
+    )
+
     # Generate queries 
     structured_llm = writer_model.with_structured_output(Queries)
 
@@ -202,6 +210,14 @@ def write_section(state: SectionState, config: RunnableConfig) -> Command[Litera
     # Get configuration
     configurable = Configuration.from_runnable_config(config)
 
+    # Initialize writer model
+    writer_provider = configurable.writer_provider.value if hasattr(configurable.writer_provider, 'value') else configurable.writer_provider
+    writer_model = init_chat_model(
+        model=configurable.writer_model,
+        model_provider=writer_provider,
+        temperature=None
+    )
+
     # Format system instructions
     system_instructions = section_writer_instructions.format(section_title=section.name, section_topic=section.description, context=source_str, section_content=section.content)
 
@@ -219,30 +235,46 @@ def write_section(state: SectionState, config: RunnableConfig) -> Command[Litera
     feedback = structured_llm.invoke([SystemMessage(content=section_grader_instructions_formatted)]+[HumanMessage(content="Grade the report and consider follow-up questions for missing information:")])
 
     if feedback.grade == "pass" or state["search_iterations"] >= configurable.max_search_depth:
-        # Publish the section to completed sections 
-        return  Command(
-        update={"completed_sections": [section]},
-        goto=END
-    )
+        return Command(
+            update={"completed_sections": [section]},
+            goto=END
+        )
     else:
-        # Update the existing section with new content and update search queries
-        return  Command(
-        update={"search_queries": feedback.follow_up_queries, "section": section},
-        goto="search_web"
+        return Command(
+            update={"search_queries": feedback.follow_up_queries, "section": section},
+            goto="search_web"
         )
     
-def write_final_sections(state: SectionState):
+def write_final_sections(state: SectionState, config: RunnableConfig):
     """ Write final sections of the report, which do not require web search and use the completed sections as context """
 
     # Get state 
     section = state["section"]
     completed_report_sections = state["report_sections_from_research"]
     
+    # Get configuration
+    configurable = Configuration.from_runnable_config(config)
+
+    # Initialize writer model
+    writer_provider = configurable.writer_provider.value if hasattr(configurable.writer_provider, 'value') else configurable.writer_provider
+    writer_model = init_chat_model(
+        model=configurable.writer_model,
+        model_provider=writer_provider,
+        temperature=None
+    )
+    
     # Format system instructions
-    system_instructions = final_section_writer_instructions.format(section_title=section.name, section_topic=section.description, context=completed_report_sections)
+    system_instructions = final_section_writer_instructions.format(
+        section_title=section.name, 
+        section_topic=section.description, 
+        context=completed_report_sections
+    )
 
     # Generate section  
-    section_content = writer_model.invoke([SystemMessage(content=system_instructions)]+[HumanMessage(content="Generate a report section based on the provided sources.")])
+    section_content = writer_model.invoke([
+        SystemMessage(content=system_instructions),
+        HumanMessage(content="Generate a report section based on the provided sources.")
+    ])
     
     # Write content to section 
     section.content = section_content.content
@@ -286,6 +318,23 @@ def compile_final_report(state: ReportState):
     all_sections = "\n\n".join([s.content for s in sections])
 
     return {"final_report": all_sections}
+
+async def build_section_with_web_research(state: SectionState, config: RunnableConfig):
+    """Build a section with web research"""
+    
+    # Get configuration
+    configurable = Configuration.from_runnable_config(config)
+    
+    # Initialize writer model for this node
+    writer_provider = configurable.writer_provider.value if hasattr(configurable.writer_provider, 'value') else configurable.writer_provider
+    writer_model = init_chat_model(
+        model=configurable.writer_model,
+        model_provider=writer_provider,
+        temperature=None
+    )
+    
+    # Rest of the function implementation...
+    # Use writer_model as needed
 
 # Report section sub-graph -- 
 
