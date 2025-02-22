@@ -121,29 +121,19 @@ export ANTHROPIC_API_KEY=<your_anthropic_api_key>
 export OPENAI_API_KEY=<your_openai_api_key>
 ```
 
-Launch the assistant with the LangGraph server locally, which will open in your browser:
+## 📖 Customizing the report
 
-(1) Provide a `Topic` and hit `Submit`:
+You can customize the research assistant's behavior through several parameters:
 
-<img width="1326" alt="input" src="https://github.com/user-attachments/assets/de264b1b-8ea5-4090-8e72-e1ef1230262f" />
+- `report_structure`: Define a custom structure for your report (defaults to a standard research report format)
+- `number_of_queries`: Number of search queries to generate per section (default: 2)
+- `max_search_depth`: Maximum number of reflection and search iterations (default: 2)
+- `planner_provider`: Model provider for planning phase (default: "openai", but can be "groq")
+- `planner_model`: Specific model for planning (default: "o3-mini", but can be any Groq hosted model such as "deepseek-r1-distill-llama-70b")
+- `writer_model`: Model for writing the report (default: "claude-3-5-sonnet-latest")
+- `search_api`: API to use for web searches (default: Tavily)
 
-(2) This will generate a report plan and present it to the user for review.
-
-(3) We can pass a string (`"..."`) with feedback to regenerate the plan based on the feedback.
-
-<img width="1326" alt="feedback" src="https://github.com/user-attachments/assets/c308e888-4642-4c74-bc78-76576a2da919" />
-
-(4) Or, we can just pass `true` to accept the plan.
-
-<img width="1480" alt="accept" src="https://github.com/user-attachments/assets/ddeeb33b-fdce-494f-af8b-bd2acc1cef06" />
-
-(5) Once accepted, the report sections will be generated.
-
-<img width="1326" alt="report_gen" src="https://github.com/user-attachments/assets/74ff01cc-e7ed-47b8-bd0c-4ef615253c46" />
-
-The report is produced as markdown.
-
-<img width="1326" alt="report" src="https://github.com/user-attachments/assets/92d9f7b7-3aea-4025-be99-7fb0d4b47289" />
+These configurations allow you to fine-tune the research process based on your needs, from adjusting the depth of research to selecting specific AI models for different phases of report generation.
 
 ## 🛠️ Technical Architecture
 
@@ -207,19 +197,5 @@ For more information, contact:
 ---
 
 Built with ❤️ by Cognio Labs
-
-## 📖 Customizing the report
-
-You can customize the research assistant's behavior through several parameters:
-
-- `report_structure`: Define a custom structure for your report (defaults to a standard research report format)
-- `number_of_queries`: Number of search queries to generate per section (default: 2)
-- `max_search_depth`: Maximum number of reflection and search iterations (default: 2)
-- `planner_provider`: Model provider for planning phase (default: "openai", but can be "groq")
-- `planner_model`: Specific model for planning (default: "o3-mini", but can be any Groq hosted model such as "deepseek-r1-distill-llama-70b")
-- `writer_model`: Model for writing the report (default: "claude-3-5-sonnet-latest")
-- `search_api`: API to use for web searches (default: Tavily)
-
-These configurations allow you to fine-tune the research process based on your needs, from adjusting the depth of research to selecting specific AI models for different phases of report generation.
 
 
