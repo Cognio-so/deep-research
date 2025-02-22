@@ -1,17 +1,41 @@
-# Open Deep Research
- 
-Open Deep Research is a web research assistant that generates comprehensive reports on any topic following a workflow similar to [OpenAI](https://openai.com/index/introducing-deep-research/) and [Gemini](https://blog.google/products/gemini/google-gemini-deep-research/) Deep Research. However, it allows you to customize the models, prompts, report structure, search API, and research depth. Specifically, you can customize:
+# Deep Research Assistant by Cognio Labs
 
-- provide an outline with a desired report structure
-- set the planner model (e.g., DeepSeek, OpenAI reasoning model, etc)
-- give feedback on the plan of report sections and iterate until user approval 
-- set the search API (e.g., Tavily, Perplexity) and # of searches to run for each research iteration
-- set the depth of search for each section (# of iterations of writing, reflection, search, re-write)
-- customize the writer model (e.g., Anthropic)
+A sophisticated AI research assistant built by Cognio Labs that automates the process of conducting deep research and generating comprehensive reports. Created by Ashutosh Upadhyay and Shivam Upadhyay.
 
-![report-generation](https://github.com/user-attachments/assets/6595d5cd-c981-43ec-8e8b-209e4fefc596)
+## 🌟 Overview
 
-## 🚀 Quickstart
+Deep Research Assistant is an advanced LLM-powered agent that follows a workflow similar to OpenAI and Gemini Deep Research, but with extensive customization options. You can:
+
+- Provide custom report structures and outlines
+- Choose the planner model (e.g., DeepSeek, OpenAI reasoning model)
+- Give feedback on report sections and iterate until approval
+- Configure search APIs (Tavily, Perplexity) and search parameters
+- Set research depth per section
+- Select writer models (OpenAI, Anthropic, Groq)
+
+
+## 🔄 How It Works
+
+1. **Plan and Execute**
+   - Uses a plan-and-execute workflow separating planning from research
+   - Enables human-in-the-loop approval of report plans
+   - Uses reasoning models for section planning
+   - Incorporates web search for initial topic understanding
+   - Accepts custom report structures and human feedback
+
+2. **Research and Write**
+   - Parallel processing of report sections
+   - Web research via Tavily API or Perplexity
+   - Iterative reflection and follow-up questions
+   - Configurable research depth
+   - Final sections (intro, conclusion) written after main body
+   
+3. **Managing Different Types**
+   - Built on LangGraph with native configuration management
+   - Supports different assistant types for various report styles
+   - Flexible structure field in graph configuration
+
+## �� Quickstart
 
 Ensure you have API keys set for your desired tools.
 
@@ -30,19 +54,6 @@ Select a planner model (by default Open Deep Research uses OpenAI o3-mini):
 * [Groq](https://groq.com/)
 
 ### Using the package
-
-(Recommended: Create a virtual environment):
-```
-python -m venv open_deep_research
-source open_deep_research/bin/activate
-```
-
-Install:
-```
-pip install open-deep-research
-```
-
-See [src/open_deep_research/graph.ipynb](src/open_deep_research/graph.ipynb) for an example of usage in a Jupyter notebook.
 
 Import and compile the graph:
 ```python
@@ -112,34 +123,6 @@ export OPENAI_API_KEY=<your_openai_api_key>
 
 Launch the assistant with the LangGraph server locally, which will open in your browser:
 
-#### Mac
-
-```bash
-# Install uv package manager
-curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# Install dependencies and start the LangGraph server
-uvx --refresh --from "langgraph-cli[inmem]" --with-editable . --python 3.11 langgraph dev
-```
-
-#### Windows
-
-```powershell
-# Install dependencies 
-pip install -e .
-pip install langgraph-cli[inmem]
-
-# Start the LangGraph server
-langgraph dev
-```
-
-Use this to open the Studio UI:
-```
-- 🚀 API: http://127.0.0.1:2024
-- 🎨 Studio UI: https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024
-- 📚 API Docs: http://127.0.0.1:2024/docs
-```
-
 (1) Provide a `Topic` and hit `Submit`:
 
 <img width="1326" alt="input" src="https://github.com/user-attachments/assets/de264b1b-8ea5-4090-8e72-e1ef1230262f" />
@@ -162,7 +145,68 @@ The report is produced as markdown.
 
 <img width="1326" alt="report" src="https://github.com/user-attachments/assets/92d9f7b7-3aea-4025-be99-7fb0d4b47289" />
 
+## 🛠️ Technical Architecture
 
+### State Management
+- `ReportState`: Manages overall report progress
+- `SectionState`: Handles individual section research
+- `SectionOutputState`: Controls section completion
+
+### Key Components
+- **Graph Structure**:
+  - Outer graph for overall report flow
+  - Inner graph for section-specific research
+  - Human-in-the-loop feedback integration
+
+- **Node Types**:
+  - `generate_report_plan`: Creates initial structure
+  - `human_feedback`: Handles user interaction
+  - `build_section_with_web_research`: Manages research flow
+  - `write_final_sections`: Generates non-research sections
+  - `compile_final_report`: Assembles final output
+
+## 🔍 Research Process
+
+1. **Query Generation**
+   - Analyzes section requirements
+   - Generates targeted search queries
+   - Adapts queries based on missing information
+
+2. **Web Research**
+   - Performs parallel searches
+   - Deduplicates and formats sources
+   - Maintains source attribution
+
+3. **Content Generation**
+   - Synthesizes research findings
+   - Ensures factual accuracy
+   - Maintains consistent style
+
+4. **Quality Control**
+   - Evaluates section completeness
+   - Identifies information gaps
+   - Triggers additional research if needed
+
+## 📊 Use Cases
+
+- Market Research Reports
+- Technical Documentation
+- Academic Literature Reviews
+- Industry Analysis
+- Competitive Intelligence
+- Technology Assessments
+
+## 🏢 About Cognio Labs
+
+Cognio Labs specializes in building advanced AI agents and automation solutions. Our mission is to enhance human capabilities through intelligent software systems.
+
+For more information, contact:
+- Ashutosh Upadhyay
+- Shivam Upadhyay
+
+---
+
+Built with ❤️ by Cognio Labs
 
 ## 📖 Customizing the report
 
@@ -178,16 +222,4 @@ You can customize the research assistant's behavior through several parameters:
 
 These configurations allow you to fine-tune the research process based on your needs, from adjusting the depth of research to selecting specific AI models for different phases of report generation.
 
-## How it works
-   
-1. `Plan and Execute` - Open Deep Research follows a [plan-and-execute workflow](https://github.com/assafelovic/gpt-researcher) that separates planning from research, allowing for human-in-the-loop approval of a report plan before the more time-consuming research phase. It uses, by default, a [reasoning model](https://www.youtube.com/watch?v=f0RbwrBcFmc) to plan the report sections. During this phase, it uses web search to gather general information about the report topic to help in planning the report sections. But, it also accepts a report structure from the user to help guide the report sections as well as human feedback on the report plan.
-   
-2. `Research and Write` - Each section of the report is written in parallel. The research assistant uses web search via [Tavily API](https://tavily.com/) or [Perplexity](https://www.perplexity.ai/hub/blog/introducing-the-sonar-pro-api) to gather information about each section topic. It will reflect on each report section and suggest follow-up questions for web search. This "depth" of research will proceed for any many iterations as the user wants. Any final sections, such as introductions and conclusions, are written after the main body of the report is written, which helps ensure that the report is cohesive and coherent. The planner determines main body versus final sections during the planning phase.
 
-3. `Managing different types` - Open Deep Research is built on LangGraph, which has native support for configuration management [using assistants](https://langchain-ai.github.io/langgraph/concepts/assistants/). The report `structure` is a field in the graph configuration, which allows users to create different assistants for different types of reports. 
-
-## UX
-
-### Local deployment
-
-Follow the [quickstart](#quickstart) to start LangGraph server locally.
